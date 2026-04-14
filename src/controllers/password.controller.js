@@ -1,7 +1,10 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import nodemailer from 'nodemailer';
+import { sendEmail } from '../utils/mailer.js';
+
+
+
 import User from '../models/User.model.js';
 import PasswordResetToken from '../models/PasswordResetToken.model.js';
 
@@ -135,19 +138,7 @@ function otpEmailHtml(userName, otp) {
 `;
 }
 
-function createTransport() {
-    const { SMTP_SERVICE, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
-    const common = { auth: SMTP_USER && SMTP_PASS ? { user: SMTP_USER, pass: SMTP_PASS } : undefined };
-    const transporter = SMTP_SERVICE
-        ? nodemailer.createTransport({ service: SMTP_SERVICE, ...common })
-        : nodemailer.createTransport({
-            host: SMTP_HOST,
-            port: SMTP_PORT ? parseInt(SMTP_PORT, 10) : 587,
-            secure: false,
-            ...common,
-        });
-    return { transporter, from: SMTP_FROM || SMTP_USER || 'no-reply@blogcafeai.app' };
-}
+
 
 export async function forgotPasswordOtp(req, res, next) {
     try {
@@ -159,9 +150,9 @@ export async function forgotPasswordOtp(req, res, next) {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         await PasswordResetToken.create({ email, tokenHash, expiresAt, used: false });
 
-        const { transporter, from } = createTransport();
         const html = otpEmailHtml(user.fullName || user.name || user.email, otp);
-        await transporter.sendMail({ from, to: email, subject: 'Your Password Reset Code', html });
+        await sendEmail({ to: email, subject: 'Your Password Reset Code', html });
+
 
         const payload = { success: true };
         if (process.env.NODE_ENV !== 'production') payload.debugOtp = otp;
@@ -182,9 +173,9 @@ export async function resendOtp(req, res, next) {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         await PasswordResetToken.create({ email, tokenHash, expiresAt, used: false });
 
-        const { transporter, from } = createTransport();
         const html = otpEmailHtml(user.fullName || user.name || user.email, otp);
-        await transporter.sendMail({ from, to: email, subject: 'Your Password Reset Code (Resent)', html });
+        await sendEmail({ to: email, subject: 'Your Password Reset Code (Resent)', html });
+
 
         const payload = { success: true };
         if (process.env.NODE_ENV !== 'production') payload.debugOtp = otp;

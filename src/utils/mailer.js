@@ -1,23 +1,33 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-export function createTransport() {
-    const { SMTP_SERVICE, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
-    const common = SMTP_USER && SMTP_PASS ? { auth: { user: SMTP_USER, pass: SMTP_PASS } } : {};
-    const transporter = SMTP_SERVICE
-        ? nodemailer.createTransport({ service: SMTP_SERVICE, ...common })
-        : nodemailer.createTransport({
-            host: SMTP_HOST,
-            port: SMTP_PORT ? parseInt(SMTP_PORT, 10) : 587,
-            secure: false,
-            ...common,
-        });
-    const from = SMTP_FROM || SMTP_USER || 'no-reply@blogcafeai.app';
-    return { transporter, from };
-}
+// Initialize Resend - must have RESEND_API in environment
+const resend = new Resend(process.env.RESEND_API);
 
 export async function sendEmail({ to, subject, html, text }) {
-    const { transporter, from } = createTransport();
-    return transporter.sendMail({ from, to, subject, html, text });
+    const from = process.env.SMTP_FROM || process.env.RESEND_FROM || 'info@blogcafeai.com';
+
+    try {
+        console.log(`Sending email via Resend to ${to}...`);
+        const { data, error } = await resend.emails.send({
+            from: `BlogCafeAi <${from}>`,
+            to: [to],
+            subject,
+            html,
+            text,
+        });
+
+        if (error) {
+            console.error('Resend error:', error);
+            throw error;
+        }
+
+        return data;
+    } catch (err) {
+        console.error('Resend execution error:', err);
+        throw err;
+    }
 }
+
+
 
 
