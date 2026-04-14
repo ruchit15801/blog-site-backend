@@ -4,7 +4,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API);
 
 export async function sendEmail({ to, subject, html, text }) {
-    const from = process.env.SMTP_FROM || process.env.RESEND_FROM || 'info@blogcafeai.com';
+    const from = process.env.RESEND_FROM || 'onboarding@resend.dev';
+
 
     try {
         console.log(`Sending email via Resend to ${to}...`);
