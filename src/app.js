@@ -23,6 +23,10 @@ import walletRoutes from './routes/wallet.routes.js';
 
 const app = express();
 
+// Set trust proxy for rate limiting behind a proxy like Render
+app.set('trust proxy', 1);
+
+
 // Security & parsing
 app.use(helmet());
 app.use(cors({ origin: '*' }));
