@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "credit-wallet": "node scripts/credit-wallet.js",
-    "regen-blog-images": "node scripts/regenerate-blog-images.js"
+    "regen-blog-images": "node scripts/regenerate-blog-images.js",
+    "regen-category-images": "node scripts/regenerate-category-images.js",
+    "regen-user-avatars": "node scripts/regenerate-user-avatars.js"
   },
   "repository": {
     "type": "git",
