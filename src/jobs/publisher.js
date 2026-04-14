@@ -1,6 +1,7 @@
 import BlogPost from '../models/BlogPost.model.js';
 import cron from 'node-cron';
 import { creditBlogPostReward } from '../utils/wallet.js';
+import { regenerateSitemap } from '../services/sitemap.service.js';
 
 // Runs periodically to publish scheduled posts whose time has come
 export async function runPublishTick() {
@@ -19,6 +20,9 @@ export async function runPublishTick() {
         });
 
         count += 1;
+    }
+    if (count > 0) {
+        await regenerateSitemap();
     }
     return { published: count };
 }

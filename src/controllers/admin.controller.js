@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import ContactMessage from '../models/ContactMessage.model.js';
 import { sendEmail } from '../utils/mailer.js';
 import { creditBlogPostReward } from '../utils/wallet.js';
+import { regenerateSitemap } from '../services/sitemap.service.js';
 
 const listSchema = z.object({ role: z.string().optional(), q: z.string().optional(), page: z.string().optional(), limit: z.string().optional() });
 
@@ -251,6 +252,11 @@ export async function adminCreatePost(req, res, next) {
             slug,
             readingTimeMinutes,
         });
+        if (post.status === 'published') {
+            regenerateSitemap().catch((err) => {
+                console.error('Sitemap regeneration failed:', err);
+            });
+        }
         res.status(201).json({ success: true, post });
     } catch (err) {
         if (err instanceof z.ZodError) return res.status(422).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid input', details: err.flatten() } });
@@ -368,6 +374,9 @@ export async function adminUpdatePost(req, res, next) {
         }
 
         await post.save();
+        regenerateSitemap().catch((err) => {
+            console.error('Sitemap regeneration failed:', err);
+        });
 
         res.json({ success: true, post });
     } catch (err) {
@@ -847,6 +856,11 @@ export async function approveUserPost(req, res, next) {
       }
   
       await post.save();
+      if (post.status === 'published') {
+        regenerateSitemap().catch((err) => {
+          console.error('Sitemap regeneration failed:', err);
+        });
+      }
 
       res.json({
         success: true,

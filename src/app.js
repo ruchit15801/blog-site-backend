@@ -30,6 +30,7 @@ app.use(express.json({ limit: '900mb' }));
 app.use(express.urlencoded({ limit: '900mb', extended: true }));
 app.use(compression());
 app.use(morgan('dev'));
+app.use(express.static('public'));
 
 // Rate limiter (basic)
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });

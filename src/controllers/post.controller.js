@@ -10,6 +10,7 @@ import User from '../models/User.model.js';
 import { verifyAccessToken } from '../security/auth.js';
 import mongoose from 'mongoose';
 import { creditBlogPostReward } from '../utils/wallet.js';
+import { regenerateSitemap } from '../services/sitemap.service.js';
 
 const listQuerySchema = z.object({
     page: z.string().optional(),
@@ -240,6 +241,9 @@ export async function createPost(req, res, next) {
       creditBlogPostReward(post._id, req.user.id).catch(err => {
         console.error('Wallet credit failed:', err);
       });
+      regenerateSitemap().catch((err) => {
+        console.error('Sitemap regeneration failed:', err);
+      });
     }
 
     res.status(201).json({
@@ -460,6 +464,9 @@ export async function publishPost(req, res, next) {
       post.rejectionReason = null;
   
       await post.save();
+      regenerateSitemap().catch((err) => {
+        console.error('Sitemap regeneration failed:', err);
+      });
   
       if (wasScheduled) {
         creditBlogPostReward(post._id, post.author).catch((err) => {

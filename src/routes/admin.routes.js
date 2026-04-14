@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware, requireRole } from '../security/auth.js';
 import multer from 'multer';
 import { listUsers, listAllPosts, searchUsersByName, adminCreatePost, adminUpdatePost, adminDeletePost, listScheduledPosts, adminCreateScheduledPost, adminPublishPostNow, updateUser, deleteUser, toggleFeatured, getAdminProfile, updateAdminProfile, changeUserPassword, fetchPostById, listContactMessages, markContactMessageRead, adminDashboard, userAllPost, fetchContactMessageById, replyToContactMessage, listPendingUserPosts, approveUserPost, rejectUserPost } from '../controllers/admin.controller.js';
+import { getAutoBlogSettings, updateAutoBlogSettings, runAutoBlogNow, listAutoBlogLogs, connectPuter } from '../controllers/autoBlog.controller.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -31,6 +32,11 @@ router.get('/contacts/:id', fetchContactMessageById);
 router.patch('/contacts/:id/read', markContactMessageRead);
 router.post('/contacts/:id/reply', replyToContactMessage);
 router.get('/dashboard', adminDashboard);
+router.get('/auto-blog/settings', getAutoBlogSettings);
+router.patch('/auto-blog/settings', updateAutoBlogSettings);
+router.post('/auto-blog/connect-puter', connectPuter);
+router.post('/auto-blog/run-now', runAutoBlogNow);
+router.get('/auto-blog/logs', listAutoBlogLogs);
 
 router.patch('/posts/:id/approve', approveUserPost);
 router.patch('/posts/:id/reject', rejectUserPost);
