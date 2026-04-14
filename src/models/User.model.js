@@ -1,0 +1,26 @@
+import mongoose from 'mongoose';
+
+const userSchema = new mongoose.Schema(
+    {
+        fullName: { type: String, required: true, trim: true },
+        email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
+        passwordHash: { type: String },
+        role: { type: String, enum: ['admin', 'user'], default: 'user', index: true },
+        bio: { type: String },
+        avatarUrl: { type: String },
+        isEmailVerified: { type: Boolean, default: false },
+        favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BlogPost' }],
+        twitterUrl: { type: String },
+        facebookUrl: { type: String },
+        instagramUrl: { type: String },
+        linkedinUrl: { type: String },
+        // Google OAuth fields
+        googleId: { type: String, unique: true, sparse: true, index: true },
+        authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
+    },
+    { timestamps: true }
+);
+
+export default mongoose.model('User', userSchema);
+
+
