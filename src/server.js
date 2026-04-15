@@ -5,6 +5,7 @@ import http from 'http';
 import app from './app.js';
 import { startPublisherCron } from './jobs/publisher.js';
 import { startAutoBlogCron } from './jobs/autoBlogGenerator.js';
+import { initCronJobs } from './loaders/cron.js';
 
 const PORT = process.env.PORT || 4000;
 
@@ -17,6 +18,8 @@ server.listen(PORT, () => {
     startPublisherCron();
     // Start auto-blog generator cron (checks every minute)
     startAutoBlogCron();
+    // Start Newsletter and other scheduled jobs
+    initCronJobs();
 });
 
 export default server;

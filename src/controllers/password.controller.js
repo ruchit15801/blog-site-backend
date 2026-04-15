@@ -2,8 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { sendEmail } from '../utils/mailer.js';
-
-
+import { logoUrl, logoWidth, logoHeight } from '../utils/logoUrl.js';
 
 import User from '../models/User.model.js';
 import PasswordResetToken from '../models/PasswordResetToken.model.js';
@@ -60,79 +59,157 @@ function generateOtp() {
 }
 
 function otpEmailHtml(userName, otp) {
+    const currentYear = new Date().getFullYear();
+    const prevYear = currentYear - 1;
+    const yearRange = `${prevYear} - ${currentYear}`;
+
+
     return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Password Reset OTP</title>
+  <title>Reset Your Password - BlogCafeAi</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f8fafc;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      padding: 40px 40px 20px;
+      text-align: center;
+    }
+    .content {
+      padding: 0 40px 40px;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto;
+      margin-bottom: 24px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 16px;
+    }
+    .text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #475569;
+      margin-bottom: 32px;
+    }
+    .otp-container {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 32px;
+      border-radius: 20px;
+      text-align: center;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+    .otp-code {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      color: #ffffff;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .otp-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .footer {
+      padding: 32px 40px;
+      background-color: #f1f5f9;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .social-links {
+      margin-bottom: 16px;
+    }
+    .social-icon {
+      display: inline-block;
+      margin: 0 8px;
+      color: #94a3b8;
+      text-decoration: none;
+    }
+    .expiry-note {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-top: 24px;
+      font-style: italic;
+    }
+  </style>
 </head>
-<body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f3f4f6;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6; padding: 30px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#fff; border-radius:16px; padding:32px; box-shadow:0 8px 24px rgba(0,0,0,0.1); border:1px solid rgba(0,0,0,0.05);">
-          <!-- Logo -->
-          <tr>
-            <td align="center" style="font-weight:700; font-size:28px; color:#4f46e5; margin-bottom:24px; padding-bottom:16px;">
-              BlogCafeAi
-            </td>
-          </tr>
-
-          <!-- Greeting -->
-          <tr>
-            <td style="font-size:16px; color:#111827; padding-bottom:12px;">
-              Dear ${userName},
-            </td>
-          </tr>
-
-          <!-- Intro -->
-          <tr>
-            <td style="font-size:15px; color:#4b5563; line-height:1.6; padding-bottom:24px;">
-              We received a request to reset your password. Please use the One-Time Password (OTP) below to verify your request:
-            </td>
-          </tr>
-
-          <!-- OTP Box -->
-          <tr>
-            <td align="center" style="background-color:#e0e7ff; padding:20px 0; border-radius:12px; font-size:32px; font-weight:700; letter-spacing:8px; color:#1e3a8a; border:1px solid #c7d2fe; box-shadow:0 4px 8px rgba(79,70,229,0.2); margin-bottom:16px;">
-              ${otp}
-            </td>
-          </tr>
-
-          <!-- OTP Note -->
-          <tr>
-            <td align="center" style="font-size:14px; color:#6b7280; padding:24px 0px;">
-              This OTP is valid for the next 10 minutes.
-            </td>
-          </tr>
-
-          <!-- Ignore note -->
-          <tr>
-            <td style="font-size:14px; color:#4b5563; line-height:1.5; padding-bottom:24px;">
-              If you did not request a password reset, you can safely ignore this email.
-            </td>
-          </tr>
-
-          <!-- Regards -->
-          <tr>
-            <td align="center" style="font-weight:600; color:#111827; padding-bottom:4px;">Regards,</td>
-          </tr>
-          <tr>
-            <td align="center" style="font-weight:700; color:#4f46e5; padding-bottom:24px;">Team BlogCafeAi</td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td align="center" style="font-size:13px; color:#6b7280;">
-              © 2025 BlogCafeAi. All rights reserved.
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <img src="${logoUrl}" alt="BlogCafeAi" width="${logoWidth}" height="${logoHeight}" style="display: block; margin: 0 auto;" />
+      </div>
+      <div class="content">
+        <div class="greeting">Hi ${userName},</div>
+        <div class="text">
+          We received a request to access your BlogCafeAi account. Use the verification code below to complete your password reset.
+        </div>
+        
+        <div class="otp-container">
+          <div class="otp-label">Verification Code</div>
+          <div class="otp-code">${otp}</div>
+        </div>
+        
+        <div class="text" style="margin-bottom: 12px;">
+          This code will expire in <strong>10 minutes</strong>.
+        </div>
+        <div class="text">
+          If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
+        </div>
+        
+        <div class="text" style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 24px;">
+          Best regards,<br/>
+          <strong>Team BlogCafeAi</strong>
+        </div>
+      </div>
+      <div class="footer">
+        <p class="footer-text">
+          © ${yearRange} BlogCafeAi. All rights reserved.
+        </p>
+        <p class="footer-text" style="margin-top: 8px;">
+          Empowering your digital journey with AI-driven insights.
+        </p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 `;

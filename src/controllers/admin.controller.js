@@ -12,6 +12,7 @@ import ContactMessage from '../models/ContactMessage.model.js';
 import { sendEmail } from '../utils/mailer.js';
 import { creditBlogPostReward } from '../utils/wallet.js';
 import { regenerateSitemap } from '../services/sitemap.service.js';
+import { brandedLayout } from '../utils/emailLayout.js';
 
 const listSchema = z.object({ role: z.string().optional(), q: z.string().optional(), page: z.string().optional(), limit: z.string().optional() });
 
@@ -735,7 +736,8 @@ export async function replyToContactMessage(req, res, next) {
 
         const to = msg.email;
         const subject = input.subject;
-        const html = input.messageHtml;
+        const yearRange = `${new Date().getFullYear() - 1} - ${new Date().getFullYear()}`;
+        const html = brandedLayout(input.messageHtml, yearRange);
         await sendEmail({ to, subject, html });
 
         msg.sentEmail = {
